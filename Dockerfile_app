@@ -1,0 +1,28 @@
+FROM alpine:latest
+
+# Installation de Nginx
+RUN apk update && \
+    apk add nginx && \
+    rm -rf /var/cache/apk/*
+
+# Création du répertoire pour Nginx
+RUN mkdir -p /run/nginx
+
+# Création du répertoire web et du fichier HTML
+RUN mkdir -p /usr/share/nginx/html && \
+    echo "<h1>Application Deployed via Terraform IaC!</h1>" > /usr/share/nginx/html/index.html
+
+# Configuration de Nginx pour servir depuis le bon répertoire
+RUN echo 'server { \
+    listen 80 default_server; \
+    listen [::]:80 default_server; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri $uri/ =404; \
+    } \
+}' > /etc/nginx/http.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
